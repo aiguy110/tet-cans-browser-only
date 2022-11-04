@@ -7,13 +7,25 @@
 </head>
 
 <body>
-    <li id="item-template" class="list-group-item" style="display: none;">Hello</li>
-    <ul id="list-container" class="list-group">
-    </ul>
+    <div class="card">
+        <div id="progress-template" class="progress" style="display: none;">
+            <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0"
+                aria-valuemax="100"></div>
+        </div>
+        <div id="progress-header" class="card-header">
+            Header
+        </div>
+        <div class="card-body">
+            <li id="item-template" class="list-group-item" style="display: none;">Hello</li>
+            <ul id="list-container" class="list-group">
+            </ul>
+        </div>
+    </div>
     <script type="text/javascript">
         var state;
 
-        var have_class    = "list-group-item-success";
+        var have_class = "list-group-item-success";
+        //var missing_class = "nothing-extra";
         var missing_class = "list-group-item-secondary";
 
 
@@ -22,7 +34,7 @@
             state = window.localStorage.getItem("tet-can-state");
             if (state === null) {
                 state = [];
-                for (let i=0; i<63; i++) {
+                for (let i = 0; i < 63; i++) {
                     state.push(false);
                 }
             } else {
@@ -31,13 +43,12 @@
 
             // Create a bunch of list items styled according to the state
             let listElement = document.getElementById("list-container");
-            for (let i=0; i<state.length; i++) {
+            for (let i = 0; i < state.length; i++) {
                 let newItem = document.getElementById("item-template").cloneNode(true);
                 newItem.id = "item-" + i;
-                newItem.innerText = "Can #"+(i+1);
+                newItem.innerText = "Can #" + (i + 1);
                 newItem.style = "";
                 newItem.addEventListener('click', () => toggleItem(i));
-                //newItem.onClick = "toggleItem("+i+")";
 
                 if (state[i]) {
                     newItem.classList.add(have_class);
@@ -46,6 +57,27 @@
                 }
                 listElement.appendChild(newItem);
             }
+
+            // Set the progress header
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let header = document.getElementById("progress-header");
+
+            let total = state.length;
+            let have_count = state.filter(x => x).length;
+            let percent = have_count / total * 100;
+            header.innerText = Math.round(percent*10)/10 + "% (" + have_count + "/" + total + ")";
+
+            let progress = document.getElementById("progress-template").cloneNode(true);
+            let bar = progress.querySelector(".progress-bar");
+            console.log(bar)
+            progress.setAttribute("style", ""); 
+            bar.setAttribute("style", "width: " + percent + "%");
+            bar.setAttribute("aria-valuenow", percent.toString());
+
+            header.appendChild(progress);
         }
 
         function toggleItem(i) {
@@ -55,11 +87,13 @@
             itemElement = document.getElementById("item-" + i);
             if (state[i]) {
                 itemElement.classList.remove(missing_class);
-                itemElement.classList.add   (have_class);
+                itemElement.classList.add(have_class);
             } else {
                 itemElement.classList.remove(have_class);
-                itemElement.classList.add   (missing_class);    
+                itemElement.classList.add(missing_class);
             }
+
+            updateProgress();
         }
 
         initList();
